@@ -16,6 +16,7 @@
     </view>
   </view>
 
+  <!-- 风险查询 Tab -->
   <view wx:if="{{activeTab === 'query'}}" class="query-tab">
     <view class="query-section card">
       <view class="section-title">信息查询</view>
@@ -46,7 +47,7 @@
 
       <view class="result-item">
         <text class="result-label">查询状态：</text>
-        <text class="result-value {{hasRisk ? 'theme-red' : 'theme-green'}}">{{riskLevel}}</text>
+        <text class="status-tag {{riskLevel === '手机卡涉案' ? 'status-danger' : riskLevel === '手机卡涉诈' ? 'status-warning' : 'status-safe'}}">{{riskLevel}}</text>
       </view>
 
       <view class="result-item">
@@ -58,10 +59,13 @@
     </view>
   </view>
 
+  <!-- 数据导入 Tab -->
   <view wx:if="{{activeTab === 'import'}}" class="import-tab">
-    <view class="import-guide card">
-      <view class="section-title">导入说明</view>
-      <view class="guide-text">请按照以下格式上传Excel文件：</view>
+
+    <!-- 模块1：身份证/风险数据导入 -->
+    <view class="import-module card">
+      <view class="module-title">身份证/风险数据导入</view>
+      <view class="module-desc">导入身份证号码、风险等级和备注信息</view>
 
       <view class="example-table">
         <view class="table-header table-row">
@@ -71,22 +75,16 @@
         </view>
         <view class="table-row">
           <view class="table-cell">360322200407133511</view>
-          <view class="table-cell">高风险</view>
-          <view class="table-cell">失信人员</view>
+          <view class="table-cell">手机卡涉案</view>
+          <view class="table-cell">身份证名下号码出现手机卡涉案</view>
         </view>
       </view>
 
       <view class="notice-section notice-box">
-        <view class="section-title">注意事项：</view>
-        <view class="notice-item">仅支持.xlsx格式文件</view>
-        <view class="notice-item">第一行为表头，必须包含"身份证号""风险等级""备注"三列</view>
-        <view class="notice-item">单次导入最大支持1000条数据</view>
+        <view class="notice-item">支持 .xlsx / .xls / .csv 格式</view>
+        <view class="notice-item">表头必须包含"身份证号""风险等级""备注"三列</view>
         <view class="notice-item">重复身份证号将自动覆盖原有数据</view>
       </view>
-    </view>
-
-    <view class="import-upload card">
-      <view class="section-title">文件上传</view>
 
       <button class="select-file-btn" bindtap="handleChooseFile" disabled="{{importing}}">
         {{selectedFile ? selectedFile.name : '选择文件'}}
@@ -104,38 +102,127 @@
       >
         {{importing ? '导入中...' : '开始导入'}}
       </button>
+
+      <view class="import-result" wx:if="{{showImportResult}}">
+        <view class="result-summary">
+          <view class="summary-item">
+            <text class="summary-label">总条数</text>
+            <text class="summary-value">{{importResult.total}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">成功</text>
+            <text class="summary-value theme-green">{{importResult.success}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">失败</text>
+            <text class="summary-value theme-red">{{importResult.failed}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{importResult.failed > 0}}" class="failures-detail">
+          <scroll-view class="failures-list" scroll-y>
+            <view class="failure-item" wx:for="{{importResult.errors}}" wx:key="row">
+              <text class="failure-row">第{{item.row}}行：</text>
+              <text class="failure-reason">{{item.reason}}</text>
+            </view>
+          </scroll-view>
+
+          <button class="export-btn" bindtap="handleExportFailures" disabled="{{exporting}}">
+            {{exporting ? '导出中...' : '下载失败数据'}}
+          </button>
+        </view>
+      </view>
     </view>
 
-    <view class="import-result card" wx:if="{{showImportResult}}">
-      <view class="section-title">导入结果</view>
+    <!-- 模块2：手机号码导入 -->
+    <view class="import-module card">
+      <view class="module-title">手机号码导入</view>
+      <view class="module-desc">导入用户手机号，默认角色为普通用户</view>
 
-      <view class="result-summary">
-        <view class="summary-item">
-          <text class="summary-label">总条数：</text>
-          <text class="summary-value">{{importResult.total}}</text>
+      <view class="example-table">
+        <view class="table-header table-row">
+          <view class="table-cell">手机号</view>
         </view>
-        <view class="summary-item">
-          <text class="summary-label">成功：</text>
-          <text class="summary-value theme-green">{{importResult.success}}</text>
-        </view>
-        <view class="summary-item">
-          <text class="summary-label">失败：</text>
-          <text class="summary-value theme-red">{{importResult.failed}}</text>
+        <view class="table-row">
+          <view class="table-cell">13800138000</view>
         </view>
       </view>
 
-      <view wx:if="{{importResult.failed > 0}}" class="failures-detail">
-        <view class="section-title">失败详情：</view>
-        <scroll-view class="failures-list" scroll-y>
-          <view class="failure-item" wx:for="{{importResult.errors}}" wx:key="row">
-            <text class="failure-row">第{{item.row}}行：</text>
-            <text class="failure-reason">{{item.reason}}</text>
+      <view class="notice-section notice-box">
+        <view class="notice-item">支持 .xlsx / .xls / .csv 格式</view>
+        <view class="notice-item">表头必须包含"手机号"列</view>
+        <view class="notice-item">导入后默认角色为普通用户，可在下方修改</view>
+      </view>
+
+      <button class="select-file-btn" bindtap="handleChoosePhoneFile" disabled="{{phoneImporting}}">
+        {{phoneFile ? phoneFile.name : '选择文件'}}
+      </button>
+
+      <view wx:if="{{phoneFile}}" class="file-info">
+        <text class="file-name">{{phoneFile.name}}</text>
+        <text class="file-size">{{phoneFileSizeText}}</text>
+      </view>
+
+      <button
+        class="import-btn btn-primary"
+        bindtap="handleImportPhones"
+        disabled="{{!phoneFile || phoneImporting}}"
+      >
+        {{phoneImporting ? '导入中...' : '开始导入'}}
+      </button>
+
+      <view class="import-result" wx:if="{{showPhoneImportResult}}">
+        <view class="result-summary">
+          <view class="summary-item">
+            <text class="summary-label">总条数</text>
+            <text class="summary-value">{{phoneImportResult.total}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">成功</text>
+            <text class="summary-value theme-green">{{phoneImportResult.success}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">失败</text>
+            <text class="summary-value theme-red">{{phoneImportResult.failed}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 用户列表 & 角色管理 -->
+      <view class="user-manage" wx:if="{{userList.length > 0}}">
+        <view class="manage-header">
+          <text class="module-title">用户角色管理</text>
+          <text class="manage-count">共{{userList.length}}人，已选{{selectedUsers.length}}人</text>
+        </view>
+
+        <view class="manage-actions">
+          <button class="action-btn select-all-btn" bindtap="handleSelectAll">
+            {{selectedUsers.length === userList.length ? '取消全选' : '全选'}}
+          </button>
+          <button class="action-btn set-admin-btn" bindtap="handleSetAdmin" disabled="{{selectedUsers.length === 0 || updatingRole}}">
+            设为管理员
+          </button>
+          <button class="action-btn set-user-btn" bindtap="handleSetUser" disabled="{{selectedUsers.length === 0 || updatingRole}}">
+            设为普通用户
+          </button>
+        </view>
+
+        <scroll-view class="user-list" scroll-y>
+          <view class="user-item" wx:for="{{userList}}" wx:key="phone">
+            <checkbox
+              checked="{{selectedUsers.indexOf(item.phone) > -1}}"
+              bindtap="onUserCheck"
+              data-phone="{{item.phone}}"
+              color="#1677ff"
+            />
+            <view class="user-info">
+              <text class="user-phone">{{item.phone}}</text>
+              <text class="user-role {{item.role === 'admin' ? 'role-admin' : 'role-user'}}">
+                {{item.role === 'admin' ? '管理员' : '普通用户'}}
+              </text>
+            </view>
           </view>
         </scroll-view>
-
-        <button class="export-btn" bindtap="handleExportFailures" disabled="{{exporting}}">
-          {{exporting ? '导出中...' : '下载失败数据'}}
-        </button>
       </view>
     </view>
   </view>

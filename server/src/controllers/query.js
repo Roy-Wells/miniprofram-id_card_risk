@@ -164,6 +164,163 @@ exports.importExcel = async (req, res) => {
   }
 };
 
+exports.importPhones = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '请选择文件'
+      });
+    }
+
+    const excelData = parseExcel(req.file.buffer);
+
+    if (!excelData || excelData.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Excel文件格式错误：缺少表头或数据'
+      });
+    }
+
+    const header = excelData[0];
+    const phoneIndex = header.findIndex(h => String(h).trim().includes('手机号'));
+
+    if (phoneIndex === -1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Excel文件格式错误：缺少"手机号"列'
+      });
+    }
+
+    let successCount = 0;
+    const errors = [];
+
+    for (let i = 1; i < excelData.length; i++) {
+      const row = excelData[i];
+      const phone = row[phoneIndex];
+      const phoneStr = phone ? String(phone).trim() : '';
+
+      if (!/^1[3-9]\d{9}$/.test(phoneStr)) {
+        errors.push({
+          row: i + 1,
+          phone: phoneStr,
+          reason: '手机号格式错误'
+        });
+        continue;
+      }
+
+      try {
+        await pool.query(
+          `INSERT INTO user_roles (phone, role)
+           VALUES (?, 'user')
+           ON DUPLICATE KEY UPDATE
+           role = role`,
+          [phoneStr]
+        );
+        successCount++;
+      } catch (error) {
+        console.error(`Database error for ${phoneStr}:`, error.message);
+        errors.push({
+          row: i + 1,
+          phone: phoneStr,
+          reason: `数据库保存失败: ${error.message}`
+        });
+      }
+    }
+
+    console.log(`Phone import summary: ${successCount} success, ${errors.length} failed`);
+
+    res.json({
+      success: true,
+      data: {
+        total: excelData.length - 1,
+        success: successCount,
+        failed: errors.length,
+        errors: errors
+      }
+    });
+  } catch (error) {
+    console.error('Phone import error:', error);
+    res.status(500).json({
+      success: false,
+      message: '导入失败，请稍后重试'
+    });
+  }
+};
+
+exports.updateRoles = async (req, res) => {
+  try {
+    const { phones, role } = req.body;
+
+    if (!phones || !Array.isArray(phones) || phones.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: '请选择要修改的用户'
+      });
+    }
+
+    if (!['admin', 'user'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: '角色值无效'
+      });
+    }
+
+    let successCount = 0;
+    const errors = [];
+
+    for (const phone of phones) {
+      try {
+        const [result] = await pool.query(
+          'UPDATE user_roles SET role = ? WHERE phone = ?',
+          [role, phone]
+        );
+        if (result.affectedRows > 0) {
+          successCount++;
+        } else {
+          errors.push({ phone, reason: '用户不存在' });
+        }
+      } catch (error) {
+        errors.push({ phone, reason: error.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        total: phones.length,
+        success: successCount,
+        failed: errors.length,
+        errors
+      }
+    });
+  } catch (error) {
+    console.error('Update roles error:', error);
+    res.status(500).json({
+      success: false,
+      message: '修改失败，请稍后重试'
+    });
+  }
+};
+
+exports.getUserList = async (req, res) => {
+  try {
+    const [users] = await pool.query(
+      'SELECT phone, role, created_at FROM user_roles ORDER BY created_at DESC'
+    );
+    res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Get user list error:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取用户列表失败'
+    });
+  }
+};
+
 exports.exportFailures = (req, res) => {
   try {
     const { errors } = req.body;

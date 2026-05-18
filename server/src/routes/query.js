@@ -15,6 +15,15 @@ router.post('/risk', authMiddleware, queryController.queryRisk);
 // 管理员导入接口路径：/api/admin/import
 router.post('/import', authMiddleware, adminMiddleware, upload.single('file'), queryController.importExcel);
 
+// 管理员导入手机号：/api/admin/import-phones
+router.post('/import-phones', authMiddleware, adminMiddleware, upload.single('file'), queryController.importPhones);
+
+// 管理员修改角色：/api/admin/update-roles
+router.post('/update-roles', authMiddleware, adminMiddleware, queryController.updateRoles);
+
+// 管理员获取用户列表：/api/admin/users
+router.get('/users', authMiddleware, adminMiddleware, queryController.getUserList);
+
 // 管理员导出接口路径：/api/admin/export-failures
 router.post('/export-failures', authMiddleware, adminMiddleware, queryController.exportFailures);
 

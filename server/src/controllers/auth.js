@@ -20,12 +20,19 @@ exports.login = async (req, res) => {
       });
     }
 
-    const [admins] = await pool.query(
-      'SELECT phone FROM admin_role WHERE phone = ?',
+    const [users] = await pool.query(
+      'SELECT phone, role FROM user_roles WHERE phone = ?',
       [phoneStr]
     );
 
-    const role = admins.length > 0 ? 'admin' : 'user';
+    if (users.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: '您非邀请用户，暂时无法使用'
+      });
+    }
+
+    const role = users[0].role;
 
     const token = jwt.sign(
       { phone: phoneStr, role },

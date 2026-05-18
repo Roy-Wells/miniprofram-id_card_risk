@@ -88,6 +88,30 @@
   word-break: break-all;
 }
 
+.status-tag {
+  display: inline-block;
+  font-size: 14px;
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.status-danger {
+  color: #F53F3F;
+  background-color: rgba(245, 63, 63, 0.1);
+}
+
+.status-warning {
+  color: #FFAA00;
+  background-color: rgba(255, 170, 0, 0.1);
+}
+
+.status-safe {
+  color: #00B42A;
+  background-color: rgba(0, 180, 42, 0.1);
+}
+
 .retry-btn {
   margin-top: 16px;
   width: 100%;

@@ -45,7 +45,7 @@
 
     <view class="result-item">
       <text class="result-label">查询状态：</text>
-      <text class="result-value {{hasRisk ? 'theme-red' : 'theme-green'}}">{{riskLevel}}</text>
+      <text class="status-tag {{riskLevel === '手机卡涉案' ? 'status-danger' : riskLevel === '手机卡涉诈' ? 'status-warning' : 'status-safe'}}">{{riskLevel}}</text>
     </view>
 
     <view class="result-item">

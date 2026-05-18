@@ -28,6 +28,9 @@ function request(url, method, data = {}) {
             url: '/pages/login/login'
           });
           reject('登录已过期');
+        } else if (res.statusCode === 403) {
+          const msg = res.data.message || '无权访问';
+          reject(msg);
         } else {
           wx.showToast({
             title: '服务器错误',

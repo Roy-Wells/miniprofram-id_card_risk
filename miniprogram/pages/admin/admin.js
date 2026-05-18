@@ -10,17 +10,46 @@ Page({
     hasRisk: false,
     riskLevel: '',
     remark: '',
+    // 身份证导入
     selectedFile: null,
     importing: false,
     showImportResult: false,
     importResult: null,
     exporting: false,
-    fileSizeText: ""
+    fileSizeText: '',
+    // 手机号导入
+    phoneFile: null,
+    phoneImporting: false,
+    showPhoneImportResult: false,
+    phoneImportResult: null,
+    phoneFileSizeText: '',
+    // 用户列表
+    userList: [],
+    selectedUsers: [],
+    updatingRole: false
+  },
+
+  onLoad() {
+    this.loadUserList();
+  },
+
+  loadUserList() {
+    request.get('/admin/users').then(data => {
+      this.setData({
+        userList: data || [],
+        selectedUsers: []
+      });
+    }).catch(err => {
+      console.error('Load users error:', err);
+    });
   },
 
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
     this.setData({ activeTab: tab });
+    if (tab === 'import') {
+      this.loadUserList();
+    }
   },
 
   onIdCardInput(e) {
@@ -67,11 +96,12 @@ Page({
     });
   },
 
+  // ========== 身份证/风险数据导入 ==========
   handleChooseFile() {
     wx.chooseMessageFile({
       count: 1,
       type: 'file',
-      extension: ['xlsx', 'xls'],
+      extension: ['xlsx', 'xls', 'csv'],
       success: (res) => {
         if (res.tempFiles && res.tempFiles.length > 0) {
           const file = res.tempFiles[0];
@@ -112,7 +142,8 @@ Page({
         importing: false,
         showImportResult: true,
         importResult: data,
-        selectedFile: null
+        selectedFile: null,
+        fileSizeText: ''
       });
 
       if (data.success > 0) {
@@ -199,6 +230,146 @@ Page({
       },
       complete: () => {
         this.setData({ exporting: false });
+      }
+    });
+  },
+
+  // ========== 手机号码导入 ==========
+  handleChoosePhoneFile() {
+    wx.chooseMessageFile({
+      count: 1,
+      type: 'file',
+      extension: ['xlsx', 'xls', 'csv'],
+      success: (res) => {
+        if (res.tempFiles && res.tempFiles.length > 0) {
+          const file = res.tempFiles[0];
+          const phoneFileSizeText = (file.size / 1024).toFixed(2) + " KB";
+          this.setData({
+            phoneFile: file,
+            phoneFileSizeText: phoneFileSizeText,
+            showPhoneImportResult: false,
+            phoneImportResult: null
+          });
+        }
+      },
+      fail: (err) => {
+        console.error('Choose phone file error:', err);
+        wx.showToast({
+          title: '选择文件失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
+  handleImportPhones() {
+    const { phoneFile } = this.data;
+
+    if (!phoneFile) {
+      wx.showToast({
+        title: '请先选择文件',
+        icon: 'none'
+      });
+      return;
+    }
+
+    this.setData({ phoneImporting: true });
+
+    request.upload('/admin/import-phones', phoneFile.path).then(data => {
+      this.setData({
+        phoneImporting: false,
+        showPhoneImportResult: true,
+        phoneImportResult: data,
+        phoneFile: null,
+        phoneFileSizeText: ''
+      });
+
+      if (data.success > 0) {
+        wx.showToast({
+          title: `成功导入${data.success}条`,
+          icon: 'success'
+        });
+        this.loadUserList();
+      }
+    }).catch(err => {
+      console.error('Phone import error:', err);
+      wx.showModal({
+        title: '上传失败',
+        content: err.errMsg || err || '请检查网络连接和服务器状态',
+        showCancel: false
+      });
+      this.setData({ phoneImporting: false });
+    });
+  },
+
+  // ========== 角色管理 ==========
+  onUserCheck(e) {
+    const phone = e.currentTarget.dataset.phone;
+    let { selectedUsers } = this.data;
+    const index = selectedUsers.indexOf(phone);
+    if (index > -1) {
+      selectedUsers.splice(index, 1);
+    } else {
+      selectedUsers.push(phone);
+    }
+    this.setData({ selectedUsers });
+  },
+
+  handleSelectAll() {
+    const { userList, selectedUsers } = this.data;
+    if (selectedUsers.length === userList.length) {
+      this.setData({ selectedUsers: [] });
+    } else {
+      this.setData({ selectedUsers: userList.map(u => u.phone) });
+    }
+  },
+
+  handleSetAdmin() {
+    this._updateRoles('admin');
+  },
+
+  handleSetUser() {
+    this._updateRoles('user');
+  },
+
+  _updateRoles(role) {
+    const { selectedUsers } = this.data;
+
+    if (selectedUsers.length === 0) {
+      wx.showToast({
+        title: '请先选择用户',
+        icon: 'none'
+      });
+      return;
+    }
+
+    const roleName = role === 'admin' ? '管理员' : '普通用户';
+
+    wx.showModal({
+      title: '确认修改',
+      content: `确定将${selectedUsers.length}位用户角色改为"${roleName}"吗？`,
+      success: (res) => {
+        if (res.confirm) {
+          this.setData({ updatingRole: true });
+
+          request.post('/admin/update-roles', {
+            phones: selectedUsers,
+            role: role
+          }).then(data => {
+            wx.showToast({
+              title: `成功修改${data.success}位用户`,
+              icon: 'success'
+            });
+            this.setData({
+              selectedUsers: [],
+              updatingRole: false
+            });
+            this.loadUserList();
+          }).catch(err => {
+            console.error('Update roles error:', err);
+            this.setData({ updatingRole: false });
+          });
+        }
       }
     });
   }
