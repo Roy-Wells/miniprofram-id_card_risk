@@ -133,10 +133,3 @@ Response: { "success": true, "data": { "total": 100, "success": 98, "failed": 2,
 
 ISC
 
-
-## License
-你的数据库信息（记住）
-主机：43.136.124.95
-端口：3306
-账号：root
-密码：123123
