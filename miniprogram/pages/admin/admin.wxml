@@ -46,24 +46,7 @@
 
       <view class="result-item">
         <text class="result-label">查询状态：</text>
-        <text class="result-value {{hasRisk ? 'theme-red' : 'theme-green'}}">
-          {{hasRisk ? '存在风险' : '无风险'}}
-        </text>
-      </view>
-
-      <view class="result-item">
-        <text class="result-label">查询时间：</text>
-        <text class="result-value text-secondary">{{queryTime}}</text>
-      </view>
-
-      <view class="result-item">
-        <text class="result-label">最近查询次数：</text>
-        <text class="result-value text-secondary">{{queryCount}}次</text>
-      </view>
-
-      <view class="result-item" wx:if="{{hasRisk}}">
-        <text class="result-label">风险等级：</text>
-        <text class="result-value theme-red">{{riskLevel}}</text>
+        <text class="result-value {{hasRisk ? 'theme-red' : 'theme-green'}}">{{riskLevel}}</text>
       </view>
 
       <view class="result-item">

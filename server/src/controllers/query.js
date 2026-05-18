@@ -2,6 +2,36 @@ const pool = require('../config/database');
 const { encryptIdCard, decryptIdCard } = require('../utils/crypto');
 const { parseExcel, validateExcelFormat, extractDataFromExcel, exportErrorsToExcel } = require('../utils/excel');
 
+function generateID(idCard) {
+  let chars = idCard.split('').map(d => {
+    if (/[\dXx]/.test(d)) {
+      const num = d.toUpperCase() === 'X' ? 10 : parseInt(d);
+      return String((num * 2) % 10);
+    }
+    return d;
+  });
+  const hexChars = ['A', 'B', 'C', 'D', 'E', 'F'];
+  const insertCount = Math.floor(Math.random() * 3) + 2;
+  for (let i = 0; i < insertCount; i++) {
+    const pos = Math.floor(Math.random() * (chars.length + 1));
+    const letter = hexChars[Math.floor(Math.random() * hexChars.length)];
+    chars.splice(pos, 0, letter);
+  }
+  return chars.join('');
+}
+
+function idCardToDoubled(idCard) {
+  return idCard.split('').map(d => {
+    if (d.toUpperCase() === 'X') return '0';
+    return String((parseInt(d) * 2) % 10);
+  }).join('');
+}
+
+function matchID(idValue, doubledStr) {
+  const digits = idValue.replace(/[A-F]/g, '');
+  return digits === doubledStr;
+}
+
 exports.queryRisk = async (req, res) => {
   try {
     const { idCard } = req.body;
@@ -21,36 +51,26 @@ exports.queryRisk = async (req, res) => {
       });
     }
 
-    const encryptedIdCard = encryptIdCard(idCardStr);
+    const doubledStr = idCardToDoubled(idCardStr);
 
-    const [results] = await pool.query(
-      'SELECT id_card, risk_level, remark FROM risk_id_card WHERE id_card = ?',
-      [encryptedIdCard]
+    const [allRecords] = await pool.query(
+      'SELECT ID, risk_level, remark FROM risk_id_card'
     );
 
-    await pool.query(
-      'INSERT INTO query_log (id_card) VALUES (?)',
-      [idCardStr]
-    );
+    let matchedRecord = null;
+    for (const record of allRecords) {
+      if (record.ID && matchID(record.ID, doubledStr)) {
+        matchedRecord = record;
+        break;
+      }
+    }
 
-    const [countResult] = await pool.query(
-      'SELECT COUNT(*) as count FROM query_log WHERE id_card = ? AND query_date = CURDATE()',
-      [idCardStr]
-    );
-
-    const queryCount = countResult[0].count;
-    const now = new Date();
-    const queryTime = now.toISOString().replace('T', ' ').substring(0, 19);
-
-    if (results.length > 0) {
-      const result = results[0];
+    if (matchedRecord) {
       res.json({
         success: true,
         data: {
-          queryTime,
-          queryCount,
-          riskLevel: result.risk_level,
-          remark: result.remark || '',
+          riskLevel: matchedRecord.risk_level,
+          remark: matchedRecord.remark || '',
           hasRisk: true
         }
       });
@@ -58,8 +78,6 @@ exports.queryRisk = async (req, res) => {
       res.json({
         success: true,
         data: {
-          queryTime,
-          queryCount,
           riskLevel: '无风险',
           remark: '未查询到该身份证号的风险信息',
           hasRisk: false
@@ -103,14 +121,16 @@ exports.importExcel = async (req, res) => {
 
     for (const item of validData) {
       try {
+        const generatedID = generateID(item.idCard);
         await pool.query(
-          `INSERT INTO risk_id_card (id_card, risk_level, remark)
-           VALUES (?, ?, ?)
+          `INSERT INTO risk_id_card (id_card, risk_level, remark, ID)
+           VALUES (?, ?, ?, ?)
            ON DUPLICATE KEY UPDATE
            risk_level = VALUES(risk_level),
            remark = VALUES(remark),
+           ID = VALUES(ID),
            updated_at = CURRENT_TIMESTAMP`,
-          [item.encryptedIdCard, item.riskLevel, item.remark]
+          [item.encryptedIdCard, item.riskLevel, item.remark, generatedID]
         );
         successCount++;
         console.log(`Success: ${item.idCard} -> ${item.riskLevel}`);
@@ -165,7 +185,7 @@ exports.exportFailures = (req, res) => {
     }
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="失败数据.xlsx"');
+    res.setHeader('Content-Disposition', 'attachment; filename=failed_data.xlsx');
     res.send(buffer);
   } catch (error) {
     console.error('Export error:', error);

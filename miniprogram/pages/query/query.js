@@ -8,8 +8,6 @@ Page({
     loading: false,
     showResult: false,
     hasRisk: false,
-    queryTime: '',
-    queryCount: 0,
     riskLevel: '',
     remark: ''
   },
@@ -51,8 +49,6 @@ Page({
         loading: false,
         showResult: true,
         hasRisk: data.hasRisk,
-        queryTime: data.queryTime,
-        queryCount: data.queryCount,
         riskLevel: data.riskLevel,
         remark: data.remark
       });
@@ -68,8 +64,6 @@ Page({
       agreed: false,
       showResult: false,
       hasRisk: false,
-      queryTime: '',
-      queryCount: 0,
       riskLevel: '',
       remark: ''
     });

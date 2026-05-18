@@ -8,8 +8,6 @@ Page({
     loading: false,
     showResult: false,
     hasRisk: false,
-    queryTime: '',
-    queryCount: 0,
     riskLevel: '',
     remark: '',
     selectedFile: null,
@@ -17,7 +15,7 @@ Page({
     showImportResult: false,
     importResult: null,
     exporting: false,
-    fileSizeText: "" 
+    fileSizeText: ""
   },
 
   switchTab(e) {
@@ -50,8 +48,6 @@ Page({
         loading: false,
         showResult: true,
         hasRisk: data.hasRisk,
-        queryTime: data.queryTime,
-        queryCount: data.queryCount,
         riskLevel: data.riskLevel,
         remark: data.remark
       });
@@ -66,8 +62,6 @@ Page({
       idCard: '',
       showResult: false,
       hasRisk: false,
-      queryTime: '',
-      queryCount: 0,
       riskLevel: '',
       remark: ''
     });
@@ -81,12 +75,10 @@ Page({
       success: (res) => {
         if (res.tempFiles && res.tempFiles.length > 0) {
           const file = res.tempFiles[0];
-          // 计算文件大小
           const fileSizeText = (file.size / 1024).toFixed(2) + " KB";
-          
           this.setData({
             selectedFile: file,
-            fileSizeText: fileSizeText,  // 👈 这里加了一行
+            fileSizeText: fileSizeText,
             showImportResult: false,
             importResult: null
           });
@@ -208,8 +200,6 @@ Page({
       complete: () => {
         this.setData({ exporting: false });
       }
-    });
-  }
     });
   }
 });
