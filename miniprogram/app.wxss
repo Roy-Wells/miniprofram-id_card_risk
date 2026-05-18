@@ -1,0 +1,108 @@
+page {
+  background-color: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* 主色调 */
+.theme-blue {
+  color: #1677ff;
+}
+
+.theme-bg-blue {
+  background-color: #1677ff;
+}
+
+/* 辅助色 */
+.theme-green {
+  color: #52c41a;
+}
+
+.theme-red {
+  color: #ff4d4f;
+}
+
+.theme-yellow {
+  color: #faad14;
+}
+
+/* 文字颜色 */
+.text-primary {
+  color: #333333;
+}
+
+.text-secondary {
+  color: #666666;
+}
+
+.text-tertiary {
+  color: #999999;
+}
+
+/* 通用按钮 */
+.btn-primary {
+  background-color: #1677ff;
+  color: white;
+  border-radius: 8px;
+  height: 44px;
+  line-height: 44px;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+
+/* 卡片 */
+.card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  margin: 0 16px;
+}
+
+/* 输入框 */
+.input-field {
+  height: 48px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.input-field:focus {
+  border-color: #1677ff;
+}
+
+/* 注意事项区域 */
+.notice-box {
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 16px;
+}
+
+.notice-item {
+  font-size: 12px;
+  color: #666666;
+  line-height: 1.8;
+  margin-bottom: 4px;
+}
+
+.notice-item::before {
+  content: "•";
+  margin-right: 4px;
+}
+
+/* 页面容器 */
+.page-container {
+  min-height: 100vh;
+  padding-bottom: 20px;
+}

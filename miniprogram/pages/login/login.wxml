@@ -1,0 +1,29 @@
+<view class="login-container">
+  <view class="login-content">
+    <view class="login-icon">
+      <text class="icon-text">🔍</text>
+    </view>
+    <view class="login-title">风险信息查询</view>
+    <view class="login-desc">欢迎使用身份证风险查询服务</view>
+
+    <view class="login-form">
+      <button
+        class="login-btn"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="handleGetPhoneNumber"
+        disabled="{{loading}}"
+      >
+        <text wx:if="{{loading}}">登录中...</text>
+        <text wx:else>微信一键登录</text>
+      </button>
+
+      <view class="login-tips">
+        <text class="tips-text">登录即表示您同意《用户服务协议》和《隐私政策》</text>
+      </view>
+    </view>
+
+    <view class="login-footer">
+      <text class="footer-text">信息加密传输，保护您的隐私安全</text>
+    </view>
+  </view>
+</view>

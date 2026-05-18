@@ -1,0 +1,159 @@
+<view class="admin-container page-container">
+  <view class="tabs">
+    <view
+      class="tab-item {{activeTab === 'query' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="query"
+    >
+      风险查询
+    </view>
+    <view
+      class="tab-item {{activeTab === 'import' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="import"
+    >
+      数据导入
+    </view>
+  </view>
+
+  <view wx:if="{{activeTab === 'query'}}" class="query-tab">
+    <view class="query-section card">
+      <view class="section-title">信息查询</view>
+
+      <view class="form-item">
+        <text class="form-label">请输入身份证号码</text>
+        <input
+          class="form-input input-field"
+          type="idcard"
+          maxlength="18"
+          placeholder="请输入18位身份证号码"
+          value="{{idCard}}"
+          bindinput="onIdCardInput"
+        />
+      </view>
+
+      <button
+        class="query-btn btn-primary"
+        bindtap="handleQuery"
+        disabled="{{loading}}"
+      >
+        {{loading ? '查询中...' : '开始查询'}}
+      </button>
+    </view>
+
+    <view class="result-section card" wx:if="{{showResult}}">
+      <view class="section-title">查询结果</view>
+
+      <view class="result-item">
+        <text class="result-label">查询状态：</text>
+        <text class="result-value {{hasRisk ? 'theme-red' : 'theme-green'}}">
+          {{hasRisk ? '存在风险' : '无风险'}}
+        </text>
+      </view>
+
+      <view class="result-item">
+        <text class="result-label">查询时间：</text>
+        <text class="result-value text-secondary">{{queryTime}}</text>
+      </view>
+
+      <view class="result-item">
+        <text class="result-label">最近查询次数：</text>
+        <text class="result-value text-secondary">{{queryCount}}次</text>
+      </view>
+
+      <view class="result-item" wx:if="{{hasRisk}}">
+        <text class="result-label">风险等级：</text>
+        <text class="result-value theme-red">{{riskLevel}}</text>
+      </view>
+
+      <view class="result-item">
+        <text class="result-label">备注：</text>
+        <text class="result-value text-secondary">{{remark}}</text>
+      </view>
+
+      <button class="retry-btn" bindtap="handleReset">重新查询</button>
+    </view>
+  </view>
+
+  <view wx:if="{{activeTab === 'import'}}" class="import-tab">
+    <view class="import-guide card">
+      <view class="section-title">导入说明</view>
+      <view class="guide-text">请按照以下格式上传Excel文件：</view>
+
+      <view class="example-table">
+        <view class="table-header table-row">
+          <view class="table-cell">身份证号</view>
+          <view class="table-cell">风险等级</view>
+          <view class="table-cell">备注</view>
+        </view>
+        <view class="table-row">
+          <view class="table-cell">360322200407133511</view>
+          <view class="table-cell">高风险</view>
+          <view class="table-cell">失信人员</view>
+        </view>
+      </view>
+
+      <view class="notice-section notice-box">
+        <view class="section-title">注意事项：</view>
+        <view class="notice-item">仅支持.xlsx格式文件</view>
+        <view class="notice-item">第一行为表头，必须包含"身份证号""风险等级""备注"三列</view>
+        <view class="notice-item">单次导入最大支持1000条数据</view>
+        <view class="notice-item">重复身份证号将自动覆盖原有数据</view>
+      </view>
+    </view>
+
+    <view class="import-upload card">
+      <view class="section-title">文件上传</view>
+
+      <button class="select-file-btn" bindtap="handleChooseFile" disabled="{{importing}}">
+        {{selectedFile ? selectedFile.name : '选择文件'}}
+      </button>
+
+      <view wx:if="{{selectedFile}}" class="file-info">
+        <text class="file-name">{{selectedFile.name}}</text>
+        <text class="file-size">{{fileSizeText}}</text>
+      </view>
+
+      <button
+        class="import-btn btn-primary"
+        bindtap="handleImport"
+        disabled="{{!selectedFile || importing}}"
+      >
+        {{importing ? '导入中...' : '开始导入'}}
+      </button>
+    </view>
+
+    <view class="import-result card" wx:if="{{showImportResult}}">
+      <view class="section-title">导入结果</view>
+
+      <view class="result-summary">
+        <view class="summary-item">
+          <text class="summary-label">总条数：</text>
+          <text class="summary-value">{{importResult.total}}</text>
+        </view>
+        <view class="summary-item">
+          <text class="summary-label">成功：</text>
+          <text class="summary-value theme-green">{{importResult.success}}</text>
+        </view>
+        <view class="summary-item">
+          <text class="summary-label">失败：</text>
+          <text class="summary-value theme-red">{{importResult.failed}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{importResult.failed > 0}}" class="failures-detail">
+        <view class="section-title">失败详情：</view>
+        <scroll-view class="failures-list" scroll-y>
+          <view class="failure-item" wx:for="{{importResult.errors}}" wx:key="row">
+            <text class="failure-row">第{{item.row}}行：</text>
+            <text class="failure-reason">{{item.reason}}</text>
+          </view>
+        </scroll-view>
+
+        <button class="export-btn" bindtap="handleExportFailures" disabled="{{exporting}}">
+          {{exporting ? '导出中...' : '下载失败数据'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,75 @@
+<view class="query-container page-container">
+  <view class="query-section card">
+    <view class="section-title">信息查询</view>
+
+    <view class="form-item">
+      <text class="form-label">请输入身份证号码</text>
+      <input
+        class="form-input input-field"
+        type="idcard"
+        maxlength="18"
+        placeholder="请输入18位身份证号码"
+        value="{{idCard}}"
+        bindinput="onIdCardInput"
+      />
+    </view>
+
+    <view class="form-item agreement">
+      <checkbox-group bindchange="onAgreementChange">
+        <label class="checkbox-label">
+          <checkbox value="agree" checked="{{agreed}}" color="#1677ff" />
+          <text class="agreement-text">我已阅读并同意《用户服务协议》和《隐私政策》</text>
+        </label>
+      </checkbox-group>
+    </view>
+
+    <button
+      class="query-btn btn-primary"
+      bindtap="handleQuery"
+      disabled="{{loading || !agreed}}"
+    >
+      {{loading ? '查询中...' : '开始查询'}}
+    </button>
+  </view>
+
+  <view class="notice-section notice-box">
+    <view class="section-title">注意事项：</view>
+    <view class="notice-item">请输入18位有效身份证号码</view>
+    <view class="notice-item">查询结果仅供参考，不作为法律依据</view>
+    <view class="notice-item">您的信息会进行加密处理，保护隐私安全</view>
+    <view class="notice-item">如有疑问，请联系厅内工作人员</view>
+  </view>
+
+  <view class="result-section card" wx:if="{{showResult}}">
+    <view class="section-title">查询结果</view>
+
+    <view class="result-item">
+      <text class="result-label">查询状态：</text>
+      <text class="result-value {{hasRisk ? 'theme-red' : 'theme-green'}}">
+        {{hasRisk ? '存在风险' : '无风险'}}
+      </text>
+    </view>
+
+    <view class="result-item">
+      <text class="result-label">查询时间：</text>
+      <text class="result-value text-secondary">{{queryTime}}</text>
+    </view>
+
+    <view class="result-item">
+      <text class="result-label">最近查询次数：</text>
+      <text class="result-value text-secondary">{{queryCount}}次</text>
+    </view>
+
+    <view class="result-item" wx:if="{{hasRisk}}">
+      <text class="result-label">风险等级：</text>
+      <text class="result-value theme-red">{{riskLevel}}</text>
+    </view>
+
+    <view class="result-item">
+      <text class="result-label">备注：</text>
+      <text class="result-value text-secondary">{{remark}}</text>
+    </view>
+
+    <button class="retry-btn" bindtap="handleReset">重新查询</button>
+  </view>
+</view>

@@ -1,0 +1,285 @@
+.admin-container {
+  padding-top: 16px;
+}
+
+.tabs {
+  display: flex;
+  background-color: white;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 14px 0;
+  font-size: 14px;
+  color: #666666;
+  position: relative;
+}
+
+.tab-item.active {
+  color: #1677ff;
+  font-weight: 500;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background-color: #1677ff;
+  border-radius: 2px;
+}
+
+.query-tab {
+  padding: 0 16px;
+}
+
+.query-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 16px;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.query-btn {
+  width: 100%;
+}
+
+.result-section {
+  margin-bottom: 20px;
+}
+
+.result-item {
+  display: flex;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.result-label {
+  min-width: 100px;
+  font-size: 14px;
+  color: #666666;
+  flex-shrink: 0;
+}
+
+.result-value {
+  font-size: 14px;
+  color: #333333;
+  word-break: break-all;
+}
+
+.retry-btn {
+  margin-top: 16px;
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  background-color: #999999;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.retry-btn:active {
+  opacity: 0.8;
+}
+
+.import-tab {
+  padding: 0 16px;
+}
+
+.import-guide {
+  margin-bottom: 16px;
+}
+
+.guide-text {
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 12px;
+}
+
+.example-table {
+  margin-bottom: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-row {
+  display: flex;
+}
+
+.table-header {
+  background-color: #f5f7fa;
+  font-weight: 500;
+}
+
+.table-cell {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 12px;
+  color: #666666;
+  text-align: center;
+  border-right: 1px solid #e8e8e8;
+}
+
+.table-cell:last-child {
+  border-right: none;
+}
+
+.notice-section {
+  margin-bottom: 16px;
+}
+
+.notice-item {
+  font-size: 12px;
+  color: #666666;
+  line-height: 1.8;
+  margin-bottom: 4px;
+}
+
+.notice-item::before {
+  content: "•";
+  margin-right: 4px;
+}
+
+.import-upload {
+  margin-bottom: 16px;
+}
+
+.select-file-btn {
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  background-color: white;
+  color: #1677ff;
+  border: 1px solid #1677ff;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.select-file-btn:active {
+  background-color: #f0f7ff;
+}
+
+.file-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.file-name {
+  font-size: 12px;
+  color: #333333;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #999999;
+}
+
+.import-btn {
+  width: 100%;
+}
+
+.import-result {
+  margin-bottom: 16px;
+}
+
+.result-summary {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  flex: 1;
+  text-align: center;
+}
+
+.summary-label {
+  display: block;
+  font-size: 12px;
+  color: #666666;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333333;
+}
+
+.failures-detail {
+  margin-top: 16px;
+}
+
+.failures-list {
+  max-height: 200px;
+  margin-bottom: 12px;
+}
+
+.failure-item {
+  font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.failure-row {
+  color: #666666;
+  margin-right: 4px;
+}
+
+.failure-reason {
+  color: #ff4d4f;
+}
+
+.export-btn {
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  background-color: #52c41a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.export-btn:active {
+  opacity: 0.8;
+}
