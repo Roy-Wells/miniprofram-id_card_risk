@@ -1,22 +1,56 @@
 const pool = require('../config/database');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+
+const APP_ID = process.env.WX_APP_ID;
+const APP_SECRET = process.env.WX_APP_SECRET;
+
+async function getAccessToken() {
+  const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APP_ID}&secret=${APP_SECRET}`;
+  const res = await axios.get(url);
+  if (res.data.errcode) {
+    throw new Error(`获取access_token失败: ${res.data.errmsg}`);
+  }
+  return res.data.access_token;
+}
+
+async function getPhoneNumber(code) {
+  const accessToken = await getAccessToken();
+  const url = `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`;
+  const res = await axios.post(url, { code });
+  if (res.data.errcode !== 0) {
+    throw new Error(`获取手机号失败: ${res.data.errmsg}`);
+  }
+  return res.data.phone_info.phoneNumber;
+}
 
 exports.login = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { code } = req.body;
 
-    if (!phone) {
+    if (!code) {
       return res.status(400).json({
         success: false,
-        message: '手机号不能为空'
+        message: '登录code不能为空'
       });
     }
 
-    const phoneStr = String(phone).trim();
+    let phoneStr;
+
+    try {
+      phoneStr = await getPhoneNumber(code);
+    } catch (error) {
+      console.error('WeChat API error:', error.message);
+      return res.status(500).json({
+        success: false,
+        message: '微信授权失败，请重试'
+      });
+    }
+
     if (!/^1[3-9]\d{9}$/.test(phoneStr)) {
       return res.status(400).json({
         success: false,
-        message: '手机号格式错误'
+        message: '获取手机号格式异常'
       });
     }
 

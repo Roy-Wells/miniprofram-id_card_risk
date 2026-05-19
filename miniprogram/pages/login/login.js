@@ -17,8 +17,7 @@ Page({
     this.setData({ loading: true });
 
     request.post('/auth/login', {
-      code: 'test-code',
-      phone: '13800138000'
+      code: e.detail.code
     }).then(data => {
       const app = getApp();
       app.setToken(data.token);
