@@ -1,62 +1,33 @@
 const pool = require('../config/database');
 const jwt = require('jsonwebtoken');
-const axios = require('axios');
+const crypto = require('crypto');
 
-const APP_ID = process.env.WX_APP_ID;
-const APP_SECRET = process.env.WX_APP_SECRET;
-
-async function getAccessToken() {
-  const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APP_ID}&secret=${APP_SECRET}`;
-  const res = await axios.get(url);
-  if (res.data.errcode) {
-    throw new Error(`获取access_token失败: ${res.data.errmsg}`);
-  }
-  return res.data.access_token;
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-async function getPhoneNumber(code) {
-  const accessToken = await getAccessToken();
-  const url = `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`;
-  const res = await axios.post(url, { code });
-  if (res.data.errcode !== 0) {
-    throw new Error(`获取手机号失败: ${res.data.errmsg}`);
-  }
-  return res.data.phone_info.phoneNumber;
-}
-
+// 手机号+密码登录
 exports.login = async (req, res) => {
   try {
-    const { code } = req.body;
+    const { phone, password } = req.body;
 
-    if (!code) {
+    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
       return res.status(400).json({
         success: false,
-        message: '登录code不能为空'
+        message: '请输入有效的手机号'
       });
     }
 
-    let phoneStr;
-
-    try {
-      phoneStr = await getPhoneNumber(code);
-    } catch (error) {
-      console.error('WeChat API error:', error.message);
-      return res.status(500).json({
-        success: false,
-        message: '微信授权失败，请重试'
-      });
-    }
-
-    if (!/^1[3-9]\d{9}$/.test(phoneStr)) {
+    if (!password) {
       return res.status(400).json({
         success: false,
-        message: '获取手机号格式异常'
+        message: '请输入密码'
       });
     }
 
     const [users] = await pool.query(
-      'SELECT phone, role FROM user_roles WHERE phone = ?',
-      [phoneStr]
+      'SELECT phone, role, password FROM user_roles WHERE phone = ?',
+      [phone]
     );
 
     if (users.length === 0) {
@@ -66,10 +37,18 @@ exports.login = async (req, res) => {
       });
     }
 
-    const role = users[0].role;
+    const user = users[0];
+    const inputHash = hashPassword(password);
+
+    if (user.password !== inputHash) {
+      return res.status(400).json({
+        success: false,
+        message: '密码错误'
+      });
+    }
 
     const token = jwt.sign(
-      { phone: phoneStr, role },
+      { phone: user.phone, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
@@ -78,8 +57,8 @@ exports.login = async (req, res) => {
       success: true,
       data: {
         token,
-        role,
-        phone: phoneStr
+        role: user.role,
+        phone: user.phone
       }
     });
   } catch (error) {

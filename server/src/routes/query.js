@@ -21,7 +21,13 @@ router.post('/import-phones', authMiddleware, adminMiddleware, upload.single('fi
 // 管理员修改角色：/api/admin/update-roles
 router.post('/update-roles', authMiddleware, adminMiddleware, queryController.updateRoles);
 
-// 管理员获取用户列表：/api/admin/users
+// 管理员删除用户：/api/admin/delete-users
+router.post('/delete-users', authMiddleware, adminMiddleware, queryController.deleteUsers);
+
+// 管理员重置用户密码：/api/admin/reset-password
+router.post('/reset-password', authMiddleware, adminMiddleware, queryController.resetPassword);
+
+// 管理员获取用户列表：/api/admin/users（支持 search 参数）
 router.get('/users', authMiddleware, adminMiddleware, queryController.getUserList);
 
 // 管理员导出接口路径：/api/admin/export-failures

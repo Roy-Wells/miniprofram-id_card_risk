@@ -1,107 +1,79 @@
 <view class="admin-container page-container">
   <view class="tabs">
-    <view
-      class="tab-item {{activeTab === 'query' ? 'active' : ''}}"
-      bindtap="switchTab"
-      data-tab="query"
-    >
-      风险查询
-    </view>
-    <view
-      class="tab-item {{activeTab === 'import' ? 'active' : ''}}"
-      bindtap="switchTab"
-      data-tab="import"
-    >
-      数据导入
-    </view>
+    <view class="tab-item {{activeTab === 'query' ? 'active' : ''}}" bindtap="switchTab" data-tab="query">风险查询</view>
+    <view class="tab-item {{activeTab === 'import' ? 'active' : ''}}" bindtap="switchTab" data-tab="import">数据导入</view>
   </view>
 
-  <!-- 风险查询 Tab -->
+  <!-- ===== 风险查询 Tab（保持不变） ===== -->
   <view wx:if="{{activeTab === 'query'}}" class="query-tab">
     <view class="query-section card">
       <view class="section-title">信息查询</view>
-
       <view class="form-item">
         <text class="form-label">请输入身份证号码</text>
-        <input
-          class="form-input input-field"
-          type="idcard"
-          maxlength="18"
-          placeholder="请输入18位身份证号码"
-          value="{{idCard}}"
-          bindinput="onIdCardInput"
-        />
+        <input class="form-input input-field" type="idcard" maxlength="18" placeholder="请输入18位身份证号码" value="{{idCard}}" bindinput="onIdCardInput" />
       </view>
-
-      <button
-        class="query-btn btn-primary"
-        bindtap="handleQuery"
-        disabled="{{loading}}"
-      >
-        {{loading ? '查询中...' : '开始查询'}}
-      </button>
+      <button class="query-btn btn-primary" bindtap="handleQuery" disabled="{{loading}}">{{loading ? '查询中...' : '开始查询'}}</button>
     </view>
-
     <view class="result-section card" wx:if="{{showResult}}">
       <view class="section-title">查询结果</view>
-
       <view class="result-item">
         <text class="result-label">查询状态：</text>
         <text class="status-tag {{riskLevel === '手机卡涉案' ? 'status-danger' : riskLevel === '手机卡涉诈' ? 'status-warning' : 'status-safe'}}">{{riskLevel}}</text>
       </view>
-
       <view class="result-item">
         <text class="result-label">备注：</text>
         <text class="result-value text-secondary">{{remark}}</text>
       </view>
-
       <button class="retry-btn" bindtap="handleReset">重新查询</button>
     </view>
   </view>
 
-  <!-- 数据导入 Tab -->
+  <!-- ===== 数据导入 Tab ===== -->
   <view wx:if="{{activeTab === 'import'}}" class="import-tab">
 
-    <!-- 模块1：身份证/风险数据导入 -->
+    <!-- ===== 模块1：身份证/风险数据导入（UI统一升级） ===== -->
     <view class="import-module card">
       <view class="module-title">身份证/风险数据导入</view>
       <view class="module-desc">导入身份证号码、风险等级和备注信息</view>
 
-      <view class="example-table">
-        <view class="table-header table-row">
-          <view class="table-cell">身份证号</view>
-          <view class="table-cell">风险等级</view>
-          <view class="table-cell">备注</view>
+      <!-- 格式要求 -->
+      <view class="format-notice">
+        <view class="format-title">格式要求</view>
+        <view class="example-table">
+          <view class="table-header table-row">
+            <view class="table-cell">身份证号</view>
+            <view class="table-cell">风险等级</view>
+            <view class="table-cell">备注</view>
+          </view>
+          <view class="table-row table-row-alt">
+            <view class="table-cell">360322200407133511</view>
+            <view class="table-cell">手机卡涉案</view>
+            <view class="table-cell">身份证名下号码出现手机卡涉案</view>
+          </view>
         </view>
-        <view class="table-row">
-          <view class="table-cell">360322200407133511</view>
-          <view class="table-cell">手机卡涉案</view>
-          <view class="table-cell">身份证名下号码出现手机卡涉案</view>
+        <view class="format-rules">
+          <text class="rule-item">支持 .xlsx / .xls / .csv 格式</text>
+          <text class="rule-item">表头必须包含"身份证号""风险等级""备注"三列</text>
+          <text class="rule-item">重复身份证号将自动覆盖原有数据</text>
         </view>
-      </view>
-
-      <view class="notice-section notice-box">
-        <view class="notice-item">支持 .xlsx / .xls / .csv 格式</view>
-        <view class="notice-item">表头必须包含"身份证号""风险等级""备注"三列</view>
-        <view class="notice-item">重复身份证号将自动覆盖原有数据</view>
       </view>
 
       <button class="select-file-btn" bindtap="handleChooseFile" disabled="{{importing}}">
         {{selectedFile ? selectedFile.name : '选择文件'}}
       </button>
-
       <view wx:if="{{selectedFile}}" class="file-info">
         <text class="file-name">{{selectedFile.name}}</text>
         <text class="file-size">{{fileSizeText}}</text>
       </view>
 
-      <button
-        class="import-btn btn-primary"
-        bindtap="handleImport"
-        disabled="{{!selectedFile || importing}}"
-      >
+      <button class="import-btn btn-primary" bindtap="handleImport" disabled="{{!selectedFile || importing}}">
         {{importing ? '导入中...' : '开始导入'}}
       </button>
+
+      <view wx:if="{{importing}}" class="progress-bar-wrap">
+        <view class="progress-bar"><view class="progress-fill" style="width: {{idImportProgress}}%"></view></view>
+        <text class="progress-text">{{idImportProgress}}%</text>
+      </view>
 
       <view class="import-result" wx:if="{{showImportResult}}">
         <view class="result-summary">
@@ -111,65 +83,78 @@
           </view>
           <view class="summary-item">
             <text class="summary-label">成功</text>
-            <text class="summary-value theme-green">{{importResult.success}}</text>
+            <text class="summary-value result-success">{{importResult.success}}</text>
           </view>
           <view class="summary-item">
             <text class="summary-label">失败</text>
-            <text class="summary-value theme-red">{{importResult.failed}}</text>
+            <text class="summary-value result-fail">{{importResult.failed}}</text>
           </view>
         </view>
-
         <view wx:if="{{importResult.failed > 0}}" class="failures-detail">
-          <scroll-view class="failures-list" scroll-y>
+          <view class="failures-toggle" bindtap="toggleIdFailures">
+            <text>失败详情</text>
+            <text class="toggle-arrow">{{showIdFailures ? '收起' : '展开'}}</text>
+          </view>
+          <scroll-view wx:if="{{showIdFailures}}" class="failures-list" scroll-y>
             <view class="failure-item" wx:for="{{importResult.errors}}" wx:key="row">
               <text class="failure-row">第{{item.row}}行：</text>
               <text class="failure-reason">{{item.reason}}</text>
             </view>
           </scroll-view>
-
-          <button class="export-btn" bindtap="handleExportFailures" disabled="{{exporting}}">
-            {{exporting ? '导出中...' : '下载失败数据'}}
-          </button>
+          <button class="export-btn" bindtap="handleExportFailures" disabled="{{exporting}}">{{exporting ? '导出中...' : '下载失败数据'}}</button>
         </view>
       </view>
     </view>
 
-    <!-- 模块2：手机号码导入 -->
+    <!-- ===== 模块2：手机号码批量导入 ===== -->
     <view class="import-module card">
-      <view class="module-title">手机号码导入</view>
-      <view class="module-desc">导入用户手机号，默认角色为普通用户</view>
+      <view class="module-title">手机号码批量导入</view>
+      <view class="module-desc">批量导入用户手机号、角色和登录密码</view>
 
-      <view class="example-table">
-        <view class="table-header table-row">
-          <view class="table-cell">手机号</view>
+      <view class="format-notice">
+        <view class="format-title">格式要求</view>
+        <view class="example-table">
+          <view class="table-header table-row">
+            <view class="table-cell">手机号</view>
+            <view class="table-cell">角色</view>
+            <view class="table-cell">password</view>
+          </view>
+          <view class="table-row table-row-alt">
+            <view class="table-cell">13800138000</view>
+            <view class="table-cell">admin</view>
+            <view class="table-cell">123456</view>
+          </view>
+          <view class="table-row">
+            <view class="table-cell">13900139000</view>
+            <view class="table-cell">user</view>
+            <view class="table-cell">abcdef</view>
+          </view>
         </view>
-        <view class="table-row">
-          <view class="table-cell">13800138000</view>
+        <view class="format-rules">
+          <text class="rule-item">支持 .xlsx / .xls / .csv 格式</text>
+          <text class="rule-item">表头必须包含"手机号""角色""password"三列</text>
+          <text class="rule-item">角色只能填 admin 或 user（不区分大小写）</text>
+          <text class="rule-item">密码长度 6-20 位，允许字母数字特殊字符</text>
+          <text class="rule-item">重复手机号自动覆盖原有角色和密码</text>
         </view>
-      </view>
-
-      <view class="notice-section notice-box">
-        <view class="notice-item">支持 .xlsx / .xls / .csv 格式</view>
-        <view class="notice-item">表头必须包含"手机号"列</view>
-        <view class="notice-item">导入后默认角色为普通用户，可在下方修改</view>
       </view>
 
       <button class="select-file-btn" bindtap="handleChoosePhoneFile" disabled="{{phoneImporting}}">
         {{phoneFile ? phoneFile.name : '选择文件'}}
       </button>
-
       <view wx:if="{{phoneFile}}" class="file-info">
         <text class="file-name">{{phoneFile.name}}</text>
         <text class="file-size">{{phoneFileSizeText}}</text>
       </view>
 
-      <button
-        class="import-btn btn-primary"
-        bindtap="handleImportPhones"
-        disabled="{{!phoneFile || phoneImporting}}"
-      >
+      <button class="import-btn btn-primary" bindtap="handleImportPhones" disabled="{{!phoneFile || phoneImporting}}">
         {{phoneImporting ? '导入中...' : '开始导入'}}
       </button>
+
+      <view wx:if="{{phoneImporting}}" class="progress-bar-wrap">
+        <view class="progress-bar"><view class="progress-fill" style="width: {{phoneImportProgress}}%"></view></view>
+        <text class="progress-text">{{phoneImportProgress}}%</text>
+      </view>
 
       <view class="import-result" wx:if="{{showPhoneImportResult}}">
         <view class="result-summary">
@@ -179,51 +164,102 @@
           </view>
           <view class="summary-item">
             <text class="summary-label">成功</text>
-            <text class="summary-value theme-green">{{phoneImportResult.success}}</text>
+            <text class="summary-value result-success">{{phoneImportResult.success}}</text>
           </view>
           <view class="summary-item">
             <text class="summary-label">失败</text>
-            <text class="summary-value theme-red">{{phoneImportResult.failed}}</text>
+            <text class="summary-value result-fail">{{phoneImportResult.failed}}</text>
           </view>
         </view>
-      </view>
-
-      <!-- 用户列表 & 角色管理 -->
-      <view class="user-manage" wx:if="{{userList.length > 0}}">
-        <view class="manage-header">
-          <text class="module-title">用户角色管理</text>
-          <text class="manage-count">共{{userList.length}}人，已选{{selectedUsers.length}}人</text>
-        </view>
-
-        <view class="manage-actions">
-          <button class="action-btn select-all-btn" bindtap="handleSelectAll">
-            {{selectedUsers.length === userList.length ? '取消全选' : '全选'}}
-          </button>
-          <button class="action-btn set-admin-btn" bindtap="handleSetAdmin" disabled="{{selectedUsers.length === 0 || updatingRole}}">
-            设为管理员
-          </button>
-          <button class="action-btn set-user-btn" bindtap="handleSetUser" disabled="{{selectedUsers.length === 0 || updatingRole}}">
-            设为普通用户
-          </button>
-        </view>
-
-        <scroll-view class="user-list" scroll-y>
-          <view class="user-item" wx:for="{{userList}}" wx:key="phone">
-            <checkbox
-              checked="{{selectedUsers.indexOf(item.phone) > -1}}"
-              bindtap="onUserCheck"
-              data-phone="{{item.phone}}"
-              color="#1677ff"
-            />
-            <view class="user-info">
-              <text class="user-phone">{{item.phone}}</text>
-              <text class="user-role {{item.role === 'admin' ? 'role-admin' : 'role-user'}}">
-                {{item.role === 'admin' ? '管理员' : '普通用户'}}
-              </text>
+        <view wx:if="{{phoneImportResult.failed > 0}}" class="failures-detail">
+          <view class="failures-toggle" bindtap="togglePhoneFailures">
+            <text>失败详情</text>
+            <text class="toggle-arrow">{{showPhoneFailures ? '收起' : '展开'}}</text>
+          </view>
+          <scroll-view wx:if="{{showPhoneFailures}}" class="failures-list" scroll-y>
+            <view class="failure-item" wx:for="{{phoneImportResult.errors}}" wx:key="row">
+              <text class="failure-row">第{{item.row}}行：</text>
+              <text class="failure-reason">{{item.reason}}</text>
             </view>
-          </view>
-        </scroll-view>
+          </scroll-view>
+          <button class="export-btn" bindtap="handleExportPhoneFailures" disabled="{{exporting}}">{{exporting ? '导出中...' : '下载失败数据'}}</button>
+        </view>
       </view>
+    </view>
+
+    <!-- ===== 模块3：用户角色管理（增强） ===== -->
+    <view class="import-module card">
+      <view class="module-title">用户角色管理</view>
+
+      <!-- 搜索栏 -->
+      <view class="search-bar">
+        <view class="search-input-wrap">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="搜索手机号" value="{{searchKeyword}}" bindinput="onSearchInput" bindconfirm="handleSearch" confirm-type="search" />
+        </view>
+        <button class="search-btn" bindtap="handleSearch">搜索</button>
+      </view>
+
+      <!-- 批量操作栏 -->
+      <view class="batch-bar">
+        <text class="batch-count">共{{filteredUsers.length}}人，已选{{selectedUsers.length}}人</text>
+        <view class="batch-actions">
+          <button class="batch-btn batch-select-btn" bindtap="handleSelectAll">{{selectedUsers.length === filteredUsers.length && filteredUsers.length > 0 ? '取消全选' : '全选'}}</button>
+          <button class="batch-btn batch-admin-btn" bindtap="handleSetAdmin" disabled="{{selectedUsers.length === 0}}">设为管理员</button>
+          <button class="batch-btn batch-user-btn" bindtap="handleSetUser" disabled="{{selectedUsers.length === 0}}">设为普通用户</button>
+          <button class="batch-btn batch-delete-btn" bindtap="handleBatchDelete" disabled="{{selectedUsers.length === 0}}">批量删除</button>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:if="{{filteredUsers.length === 0}}" class="empty-state">
+        <text class="empty-text">暂无用户数据</text>
+      </view>
+
+      <!-- 用户列表 -->
+      <view wx:if="{{filteredUsers.length > 0}}" class="user-list-wrap">
+        <view class="user-item" wx:for="{{currentPageUsers}}" wx:key="phone">
+          <view class="checkbox-wrap" bindtap="onUserCheck" data-phone="{{item.phone}}">
+            <view class="custom-checkbox {{selectedUsers.indexOf(item.phone) > -1 ? 'checkbox-checked' : ''}}">{{selectedUsers.indexOf(item.phone) > -1 ? '✓' : ''}}</view>
+          </view>
+          <view class="user-info">
+            <text class="user-phone">{{item.phone}}</text>
+            <text class="user-role {{item.role === 'admin' ? 'role-admin' : 'role-user'}}">{{item.role === 'admin' ? '管理员' : '普通用户'}}</text>
+          </view>
+          <view class="user-actions">
+            <text class="action-text action-admin" wx:if="{{item.role !== 'admin'}}" data-phone="{{item.phone}}" bindtap="handleSetSingleAdmin">设为管理员</text>
+            <text class="action-text action-user" wx:if="{{item.role !== 'user'}}" data-phone="{{item.phone}}" bindtap="handleSetSingleUser">设为普通用户</text>
+            <text class="action-text action-reset" data-phone="{{item.phone}}" bindtap="handleShowResetModal">重置密码</text>
+            <text class="action-text action-delete" data-phone="{{item.phone}}" bindtap="handleDeleteUser">删除</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 分页 -->
+      <view wx:if="{{totalPages > 1}}" class="pagination">
+        <text class="page-btn {{currentPage <= 1 ? 'page-disabled' : ''}}" bindtap="handlePrevPage">上一页</text>
+        <text class="page-info">{{currentPage}} / {{totalPages}}</text>
+        <text class="page-btn {{currentPage >= totalPages ? 'page-disabled' : ''}}" bindtap="handleNextPage">下一页</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 重置密码模态框 ===== -->
+  <view class="modal-mask" wx:if="{{showResetModal}}" bindtap="handleCloseResetModal"></view>
+  <view class="modal-container" wx:if="{{showResetModal}}">
+    <view class="modal-title">重置密码</view>
+    <view class="modal-body">
+      <view class="modal-input-group">
+        <input class="modal-input {{resetError ? 'modal-input-error' : ''}}" password="{{!resetShowPwd}}" maxlength="20" placeholder="请输入 6-20 位新密码" value="{{resetNewPwd}}" bindinput="onResetNewPwdInput" />
+      </view>
+      <view class="modal-input-group">
+        <input class="modal-input {{resetError ? 'modal-input-error' : ''}}" password="{{!resetShowPwd}}" maxlength="20" placeholder="请再次输入新密码" value="{{resetConfirmPwd}}" bindinput="onResetConfirmPwdInput" />
+      </view>
+      <view class="modal-error" wx:if="{{resetError}}">{{resetError}}</view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn modal-cancel-btn" bindtap="handleCloseResetModal">取消</button>
+      <button class="modal-btn modal-submit-btn" bindtap="handleResetPassword" disabled="{{resetSubmitting}}">{{resetSubmitting ? '提交中...' : '提交'}}</button>
     </view>
   </view>
 </view>

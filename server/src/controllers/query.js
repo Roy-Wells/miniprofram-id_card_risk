@@ -1,6 +1,11 @@
 const pool = require('../config/database');
 const { encryptIdCard, decryptIdCard } = require('../utils/crypto');
 const { parseExcel, validateExcelFormat, extractDataFromExcel, exportErrorsToExcel } = require('../utils/excel');
+const crypto = require('crypto');
+
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 function generateID(idCard) {
   let chars = idCard.split('').map(d => {
@@ -182,13 +187,15 @@ exports.importPhones = async (req, res) => {
       });
     }
 
-    const header = excelData[0];
-    const phoneIndex = header.findIndex(h => String(h).trim().includes('手机号'));
+    const header = excelData[0].map(h => String(h).trim());
+    const phoneIndex = header.findIndex(h => h.includes('手机号'));
+    const roleIndex = header.findIndex(h => h.includes('角色'));
+    const passwordIndex = header.findIndex(h => h.toLowerCase().includes('password') || h.includes('密码'));
 
-    if (phoneIndex === -1) {
+    if (phoneIndex === -1 || roleIndex === -1 || passwordIndex === -1) {
       return res.status(400).json({
         success: false,
-        message: 'Excel文件格式错误：缺少"手机号"列'
+        message: 'Excel文件格式错误：表头必须包含"手机号""角色""password"三列'
       });
     }
 
@@ -198,33 +205,45 @@ exports.importPhones = async (req, res) => {
     for (let i = 1; i < excelData.length; i++) {
       const row = excelData[i];
       const phone = row[phoneIndex];
-      const phoneStr = phone ? String(phone).trim() : '';
+      const role = row[roleIndex];
+      const password = row[passwordIndex];
 
+      const phoneStr = phone ? String(phone).trim() : '';
+      const roleStr = role ? String(role).trim().toLowerCase() : '';
+      const passwordStr = password ? String(password).trim() : '';
+
+      // 校验手机号
       if (!/^1[3-9]\d{9}$/.test(phoneStr)) {
-        errors.push({
-          row: i + 1,
-          phone: phoneStr,
-          reason: '手机号格式错误'
-        });
+        errors.push({ row: i + 1, phone: phoneStr, reason: '手机号格式错误' });
+        continue;
+      }
+
+      // 校验角色
+      if (!['admin', 'user'].includes(roleStr)) {
+        errors.push({ row: i + 1, phone: phoneStr, reason: '角色值非法，只能为 admin 或 user' });
+        continue;
+      }
+
+      // 校验密码
+      if (!passwordStr || passwordStr.length < 6 || passwordStr.length > 20) {
+        errors.push({ row: i + 1, phone: phoneStr, reason: '密码长度须为6-20位' });
         continue;
       }
 
       try {
+        const hashedPwd = hashPassword(passwordStr);
         await pool.query(
-          `INSERT INTO user_roles (phone, role)
-           VALUES (?, 'user')
+          `INSERT INTO user_roles (phone, role, password)
+           VALUES (?, ?, ?)
            ON DUPLICATE KEY UPDATE
-           role = role`,
-          [phoneStr]
+           role = VALUES(role),
+           password = VALUES(password)`,
+          [phoneStr, roleStr, hashedPwd]
         );
         successCount++;
       } catch (error) {
         console.error(`Database error for ${phoneStr}:`, error.message);
-        errors.push({
-          row: i + 1,
-          phone: phoneStr,
-          reason: `数据库保存失败: ${error.message}`
-        });
+        errors.push({ row: i + 1, phone: phoneStr, reason: `数据库保存失败: ${error.message}` });
       }
     }
 
@@ -305,9 +324,18 @@ exports.updateRoles = async (req, res) => {
 
 exports.getUserList = async (req, res) => {
   try {
-    const [users] = await pool.query(
-      'SELECT phone, role, created_at FROM user_roles ORDER BY created_at DESC'
-    );
+    const { search } = req.query;
+    let sql = 'SELECT phone, role, created_at FROM user_roles';
+    const params = [];
+
+    if (search) {
+      sql += ' WHERE phone LIKE ?';
+      params.push(`%${search}%`);
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    const [users] = await pool.query(sql, params);
     res.json({
       success: true,
       data: users
@@ -317,6 +345,99 @@ exports.getUserList = async (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取用户列表失败'
+    });
+  }
+};
+
+exports.deleteUsers = async (req, res) => {
+  try {
+    const { phones } = req.body;
+
+    if (!phones || !Array.isArray(phones) || phones.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: '请选择要删除的用户'
+      });
+    }
+
+    let successCount = 0;
+    const errors = [];
+
+    for (const phone of phones) {
+      try {
+        const [result] = await pool.query(
+          'DELETE FROM user_roles WHERE phone = ?',
+          [phone]
+        );
+        if (result.affectedRows > 0) {
+          successCount++;
+        } else {
+          errors.push({ phone, reason: '用户不存在' });
+        }
+      } catch (error) {
+        errors.push({ phone, reason: error.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        total: phones.length,
+        success: successCount,
+        failed: errors.length,
+        errors
+      }
+    });
+  } catch (error) {
+    console.error('Delete users error:', error);
+    res.status(500).json({
+      success: false,
+      message: '删除失败，请稍后重试'
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { phone, password } = req.body;
+
+    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: '手机号无效'
+      });
+    }
+
+    if (!password || password.length < 6 || password.length > 20) {
+      return res.status(400).json({
+        success: false,
+        message: '密码长度须为6-20位'
+      });
+    }
+
+    const hashedPwd = hashPassword(password);
+
+    const [result] = await pool.query(
+      'UPDATE user_roles SET password = ? WHERE phone = ?',
+      [hashedPwd, phone]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: '用户不存在'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '密码重置成功'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: '重置密码失败，请稍后重试'
     });
   }
 };

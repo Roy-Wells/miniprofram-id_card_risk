@@ -7,15 +7,42 @@
     <view class="login-desc">欢迎使用身份证风险查询服务</view>
 
     <view class="login-form">
-      <button
-        class="login-btn"
-        open-type="getPhoneNumber"
-        bindgetphonenumber="handleGetPhoneNumber"
-        disabled="{{loading}}"
-      >
-        <text wx:if="{{loading}}">登录中...</text>
-        <text wx:else>微信一键登录</text>
-      </button>
+      <view class="form-card">
+        <view class="input-group">
+          <text class="input-label">手机号</text>
+          <input
+            class="form-input"
+            type="number"
+            maxlength="11"
+            placeholder="请输入手机号"
+            value="{{phone}}"
+            bindinput="onPhoneInput"
+          />
+        </view>
+
+        <view class="input-group">
+          <text class="input-label">密码</text>
+          <input
+            class="form-input"
+            password="{{!showPassword}}"
+            maxlength="20"
+            placeholder="请输入密码"
+            value="{{password}}"
+            bindinput="onPasswordInput"
+          />
+          <view class="password-toggle" bindtap="togglePassword">
+            <text class="toggle-text">{{showPassword ? '隐藏' : '显示'}}</text>
+          </view>
+        </view>
+
+        <button
+          class="login-btn"
+          bindtap="handleLogin"
+          disabled="{{!phone || !password || loading}}"
+        >
+          {{loading ? '登录中...' : '登录'}}
+        </button>
+      </view>
 
       <view class="login-tips">
         <text class="tips-text">登录即表示您同意《用户服务协议》和《隐私政策》</text>
