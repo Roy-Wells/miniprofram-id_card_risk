@@ -2,22 +2,22 @@ const request = require('../../utils/request');
 
 Page({
   data: {
+    phone: '',
+    password: '',
+    showPassword: false,
     loading: false
   },
 
   onLoad() {
-    // 检查本地缓存登录状态
     this.checkLoginStatus();
   },
 
   // ========== 检查本地缓存登录状态 ==========
   checkLoginStatus() {
-    const app = getApp();
     const token = wx.getStorageSync('token');
     const userInfo = wx.getStorageSync('userInfo');
 
     if (token && userInfo && userInfo.role) {
-      // 已登录，直接跳转
       if (userInfo.role === 'admin') {
         wx.redirectTo({ url: '/pages/admin/admin' });
       } else {
@@ -26,27 +26,27 @@ Page({
     }
   },
 
-  // ========== 微信快捷登录 ==========
-  handleGetPhoneNumber(e) {
-    if (e.detail.errMsg !== 'getPhoneNumber:ok') {
-      // 用户拒绝授权
-      if (e.detail.errMsg.includes('deny') || e.detail.errMsg.includes('cancel')) {
-        wx.showToast({ title: '需要授权手机号才能登录', icon: 'none', duration: 2500 });
-      } else {
-        wx.showToast({ title: '获取手机号失败，请重试', icon: 'none' });
-      }
+  onPhoneInput(e) { this.setData({ phone: e.detail.value }); },
+  onPasswordInput(e) { this.setData({ password: e.detail.value }); },
+  togglePassword() { this.setData({ showPassword: !this.data.showPassword }); },
+
+  // ========== 登录 ==========
+  handleLogin() {
+    const { phone, password } = this.data;
+
+    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+      wx.showToast({ title: '请输入11位有效手机号', icon: 'none' });
       return;
     }
 
-    const code = e.detail.code;
-    if (!code) {
-      wx.showToast({ title: '获取授权码失败', icon: 'none' });
+    if (!password || password.length < 6) {
+      wx.showToast({ title: '请输入6位以上密码', icon: 'none' });
       return;
     }
 
     this.setData({ loading: true });
 
-    request.post('/auth/phone-login', { code }).then(data => {
+    request.post('/auth/login', { phone, password }).then(data => {
       const app = getApp();
       app.setToken(data.token);
       app.setUserInfo({ phone: data.phone, role: data.role });
@@ -61,18 +61,13 @@ Page({
         }
       }, 1500);
     }).catch(err => {
-      console.error('Phone login error:', err);
-      if (err === '手机号无访问权限，请联系管理员') {
-        wx.showModal({
-          title: '无访问权限',
-          content: '手机号无访问权限，请联系管理员',
-          showCancel: false,
-          confirmText: '我知道了'
-        });
+      console.error('Login error:', err);
+      if (err === '您非邀请用户，暂时无法使用') {
+        wx.showToast({ title: '您非邀请用户，暂时无法使用', icon: 'none', duration: 3000 });
       } else {
         wx.showModal({
           title: '登录失败',
-          content: err || '请检查网络后重试',
+          content: err || '请重试',
           showCancel: false,
           confirmText: '重试'
         });
