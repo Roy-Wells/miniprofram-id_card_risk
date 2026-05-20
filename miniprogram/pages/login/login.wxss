@@ -43,148 +43,79 @@
   margin-bottom: 40px;
 }
 
-/* ========== 自动登录加载 ========== */
-.auto-login-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.auto-login-text {
-  font-size: 16px;
-  color: white;
-  font-weight: 500;
-}
-
-/* ========== 无权限提示 ========== */
-.no-permission {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 24px;
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+/* ========== 登录卡片 ========== */
+.login-card {
   width: 100%;
-  box-sizing: border-box;
-}
-
-.no-permission-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-
-.no-permission-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 8px;
-}
-
-.no-permission-desc {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 1.5;
-}
-
-/* ========== 手动登录表单 ========== */
-.login-form {
-  width: 100%;
-  margin-bottom: 32px;
-}
-
-.form-card {
   background-color: white;
   border-radius: 16px;
-  padding: 24px 20px;
+  padding: 28px 24px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  margin-bottom: 32px;
 }
 
-.input-group {
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.input-label {
-  display: block;
-  font-size: 14px;
-  color: #333333;
-  font-weight: 500;
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2937;
+  text-align: center;
   margin-bottom: 8px;
 }
 
-.form-input {
-  width: 100%;
-  height: 44px;
-  line-height: 44px;
-  background-color: #f5f7fa;
-  border-radius: 8px;
-  padding: 0 12px;
-  font-size: 15px;
-  color: #333333;
-  box-sizing: border-box;
+.card-desc {
+  font-size: 13px;
+  color: #6B7280;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.password-toggle {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  padding: 4px 8px;
-}
-
-.toggle-text {
-  font-size: 12px;
-  color: #1677ff;
-}
-
-.login-btn {
+/* ========== 微信快捷登录按钮 ========== */
+.wechat-login-btn {
   width: 100%;
   height: 48px;
   line-height: 48px;
-  background-color: #1677ff;
+  background-color: #07C160;
   color: white;
   border: none;
   border-radius: 24px;
   font-size: 16px;
   font-weight: 500;
-  margin-top: 8px;
-  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.login-btn:active {
+.wechat-login-btn::after {
+  border: none;
+}
+
+.wechat-login-btn:active {
   opacity: 0.9;
 }
 
-.login-btn[disabled] {
-  background-color: #a0c4ff;
+.wechat-login-btn[disabled] {
+  background-color: #8BD4A4;
   box-shadow: none;
 }
 
-.login-tips {
-  text-align: center;
-  margin-top: 16px;
+/* ========== 安全提示 ========== */
+.login-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #F0F0F0;
 }
 
-.tips-text {
+.notice-icon {
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+.notice-text {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #9CA3AF;
 }
 
 .login-footer {

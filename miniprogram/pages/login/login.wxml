@@ -6,60 +6,23 @@
     <view class="login-title">风险信息查询</view>
     <view class="login-desc">欢迎使用身份证风险查询服务</view>
 
-    <!-- 自动登录中 -->
-    <view wx:if="{{autoLogging}}" class="auto-login-area">
-      <view class="loading-spinner"></view>
-      <text class="auto-login-text">正在自动登录...</text>
-    </view>
+    <view class="login-card">
+      <view class="card-title">微信快捷登录</view>
+      <view class="card-desc">点击下方按钮，授权手机号完成登录</view>
 
-    <!-- 无权限提示 -->
-    <view wx:if="{{noPermission}}" class="no-permission">
-      <text class="no-permission-icon">🚫</text>
-      <text class="no-permission-text">无权限访问</text>
-      <text class="no-permission-desc">您的微信账号未在系统中注册，请使用手机号登录</text>
-    </view>
+      <button
+        class="wechat-login-btn"
+        open-type="getPhoneNumber"
+        bindgetphonenumber="handleGetPhoneNumber"
+        loading="{{loading}}"
+        disabled="{{loading}}"
+      >
+        {{loading ? '登录中...' : '微信快捷登录'}}
+      </button>
 
-    <!-- 手动登录表单 -->
-    <view wx:if="{{showLoginForm}}" class="login-form">
-      <view class="form-card">
-        <view class="input-group">
-          <text class="input-label">手机号</text>
-          <input
-            class="form-input"
-            type="number"
-            maxlength="11"
-            placeholder="请输入手机号"
-            value="{{phone}}"
-            bindinput="onPhoneInput"
-          />
-        </view>
-
-        <view class="input-group">
-          <text class="input-label">密码</text>
-          <input
-            class="form-input"
-            password="{{!showPassword}}"
-            maxlength="20"
-            placeholder="请输入密码"
-            value="{{password}}"
-            bindinput="onPasswordInput"
-          />
-          <view class="password-toggle" bindtap="togglePassword">
-            <text class="toggle-text">{{showPassword ? '隐藏' : '显示'}}</text>
-          </view>
-        </view>
-
-        <button
-          class="login-btn"
-          bindtap="handleLogin"
-          disabled="{{!phone || !password || loading}}"
-        >
-          {{loading ? '登录中...' : '登录'}}
-        </button>
-      </view>
-
-      <view class="login-tips">
-        <text class="tips-text">首次登录后将自动绑定微信，下次免输入</text>
+      <view class="login-notice">
+        <text class="notice-icon">🔒</text>
+        <text class="notice-text">手机号仅用于身份验证，不会泄露给第三方</text>
       </view>
     </view>
 
