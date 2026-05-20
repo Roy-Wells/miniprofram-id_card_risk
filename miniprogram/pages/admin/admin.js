@@ -149,7 +149,7 @@ Page({
 
   onUserCheck(e) {
     const phone = e.currentTarget.dataset.phone;
-    let { selectedUsers } = this.data;
+    const selectedUsers = [...this.data.selectedUsers];
     const idx = selectedUsers.indexOf(phone);
     if (idx > -1) { selectedUsers.splice(idx, 1); } else { selectedUsers.push(phone); }
     this.setData({ selectedUsers });

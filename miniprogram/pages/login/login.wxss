@@ -43,6 +43,68 @@
   margin-bottom: 40px;
 }
 
+/* ========== 自动登录加载 ========== */
+.auto-login-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.auto-login-text {
+  font-size: 16px;
+  color: white;
+  font-weight: 500;
+}
+
+/* ========== 无权限提示 ========== */
+.no-permission {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.no-permission-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.no-permission-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.no-permission-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ========== 手动登录表单 ========== */
 .login-form {
   width: 100%;
   margin-bottom: 32px;

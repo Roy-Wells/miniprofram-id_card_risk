@@ -2,7 +2,7 @@ App({
   globalData: {
     token: null,
     userInfo: null,
-    baseUrl: 'http://43.136.124.95:3000/api'
+    baseUrl: 'https://www.luoweiworktest.cloud'
   },
 
   onLaunch() {

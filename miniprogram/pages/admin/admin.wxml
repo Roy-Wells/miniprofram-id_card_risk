@@ -216,17 +216,19 @@
         <text class="empty-text">暂无用户数据</text>
       </view>
 
-      <!-- 用户列表 -->
+      <!-- 用户列表（布局重构：双行布局） -->
       <view wx:if="{{filteredUsers.length > 0}}" class="user-list-wrap">
         <view class="user-item" wx:for="{{currentPageUsers}}" wx:key="phone">
-          <view class="checkbox-wrap" bindtap="onUserCheck" data-phone="{{item.phone}}">
-            <view class="custom-checkbox {{selectedUsers.indexOf(item.phone) > -1 ? 'checkbox-checked' : ''}}">{{selectedUsers.indexOf(item.phone) > -1 ? '✓' : ''}}</view>
-          </view>
-          <view class="user-info">
+          <!-- 第一行：复选框 + 手机号 + 角色标签 -->
+          <view class="user-row-top">
+            <view class="checkbox-wrap" bindtap="onUserCheck" data-phone="{{item.phone}}">
+              <view class="custom-checkbox {{selectedUsers.indexOf(item.phone) > -1 ? 'checkbox-checked' : ''}}">{{selectedUsers.indexOf(item.phone) > -1 ? '✓' : ''}}</view>
+            </view>
             <text class="user-phone">{{item.phone}}</text>
             <text class="user-role {{item.role === 'admin' ? 'role-admin' : 'role-user'}}">{{item.role === 'admin' ? '管理员' : '普通用户'}}</text>
           </view>
-          <view class="user-actions">
+          <!-- 第二行：操作按钮组 -->
+          <view class="user-row-actions">
             <text class="action-text action-admin" wx:if="{{item.role !== 'admin'}}" data-phone="{{item.phone}}" bindtap="handleSetSingleAdmin">设为管理员</text>
             <text class="action-text action-user" wx:if="{{item.role !== 'user'}}" data-phone="{{item.phone}}" bindtap="handleSetSingleUser">设为普通用户</text>
             <text class="action-text action-reset" data-phone="{{item.phone}}" bindtap="handleShowResetModal">重置密码</text>
